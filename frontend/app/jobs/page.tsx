@@ -1,40 +1,11 @@
+import { RadioTower } from "lucide-react";
 import { JobCard } from "@/components/JobCard";
-import { apiGet, type JobWithMatch } from "@/lib/api";
+import { filterJobs, getJobData } from "@/lib/jobs";
 
-export default async function JobsPage({ searchParams }: { searchParams: Record<string, string | undefined> }) {
-  const params = new URLSearchParams();
-  for (const key of ["keyword", "location", "japanese", "visa", "skill"]) {
-    if (searchParams[key]) params.set(key, searchParams[key] as string);
-  }
-  const data = await apiGet<{ total: number; items: JobWithMatch[] }>(`/api/v1/jobs?${params}`);
-  return (
-    <>
-      <div className="topbar">
-        <div>
-          <h1 className="page-title">Job Discovery</h1>
-          <div className="subtle">{data.total} Japan technology roles with explainable AI matching.</div>
-        </div>
-      </div>
-      <form className="toolbar">
-        <input className="input" name="keyword" placeholder="Software Engineer, AWS, fintech" defaultValue={searchParams.keyword} />
-        <select className="select" name="location" defaultValue={searchParams.location}>
-          <option value="">Any location</option>
-          {["Tokyo", "Osaka", "Kyoto", "Nagoya", "Fukuoka", "Remote"].map((x) => <option key={x}>{x}</option>)}
-        </select>
-        <select className="select" name="japanese" defaultValue={searchParams.japanese}>
-          <option value="">Any Japanese level</option>
-          {["None", "N3", "N2", "N1", "Native"].map((x) => <option key={x}>{x}</option>)}
-        </select>
-        <select className="select" name="visa" defaultValue={searchParams.visa}>
-          <option value="">Any visa signal</option>
-          {["Likely sponsors", "Does not mention sponsorship", "Unknown", "Not eligible"].map((x) => <option key={x}>{x}</option>)}
-        </select>
-        <input className="input" name="skill" placeholder="Skill" defaultValue={searchParams.skill} />
-        <button className="button">Search</button>
-      </form>
-      <div className="grid">
-        {data.items.map((item) => <JobCard item={item} key={item.job.id} />)}
-      </div>
-    </>
-  );
+type JobsPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+export const revalidate = 21600;
+
+export default async function JobsPage({ searchParams }: JobsPageProps) {
+  const filters = await searchParams; const params = new URLSearchParams(); for (const key of ["keyword", "location", "japanese", "visa", "skill"]) { const value = filters[key]; if (typeof value === "string") params.set(key, value); } const data = await getJobData(); const items = filterJobs(data.items, params);
+  return <><div className="page-heading split"><div><span className="kicker">Opportunity radar</span><h1 className="page-title">Roles worth your attention.</h1><p className="hero-copy subtle">Live public listings and clearly marked Japan-market demos, normalized into one explainable shortlist.</p></div><div className="feed-health"><RadioTower size={18} /><div><strong>{data.liveCount} live listings</strong><span>{data.sources.filter((source) => source.ok).length}/{data.sources.length} public feeds connected</span></div></div></div><form className="toolbar premium-toolbar"><label className="field field-wide"><span>Search</span><input className="input" name="keyword" placeholder="Role, company, or keyword" defaultValue={typeof filters.keyword === "string" ? filters.keyword : ""} /></label><label className="field"><span>Location</span><input className="input" name="location" placeholder="Tokyo, remote…" defaultValue={typeof filters.location === "string" ? filters.location : ""} /></label><label className="field"><span>Japanese</span><select className="select" name="japanese" defaultValue={typeof filters.japanese === "string" ? filters.japanese : ""}><option value="">Any level</option>{["None", "N3", "N2", "N1", "Native"].map((x) => <option key={x}>{x}</option>)}</select></label><label className="field"><span>Skill</span><input className="input" name="skill" placeholder="Python, AWS…" defaultValue={typeof filters.skill === "string" ? filters.skill : ""} /></label><button className="button">Refine results</button></form><div className="results-meta"><span><strong>{items.length}</strong> matched roles</span><span className="source-legend"><i className="live-dot" /> Live source <i className="curated-dot" /> Curated demo</span></div><div className="jobs-grid">{items.map((item) => <JobCard item={item} key={item.job.id} />)}{items.length === 0 ? <div className="surface empty-state"><h2>No roles found</h2><p>Try a broader location or remove one of the filters.</p></div> : null}</div></>;
 }

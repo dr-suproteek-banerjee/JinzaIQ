@@ -29,6 +29,10 @@ const job: JobWithMatch["job"] = {
   posting_date: "2026-08-14",
   estimated_freshness: "Fresh",
   application_url: "https://example.com/jobs/vercel-demo"
+  ,source_name: "JinzaIQ Curated"
+  ,source_type: "curated"
+  ,source_url: "https://jinza-iq.vercel.app/jobs"
+  ,description: "Build reliable APIs and AI-assisted recruiting workflows with a product-focused engineering team in Tokyo."
 };
 
 const match: JobWithMatch["match"] = {

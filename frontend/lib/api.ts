@@ -35,52 +35,51 @@ export type JobWithMatch = {
     posting_date: string;
     estimated_freshness: string;
     application_url: string;
+    source_name: string;
+    source_type: "live" | "curated";
+    source_url: string;
+    description: string;
   };
   match: MatchAnalysis;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const hasExplicitApiUrl = Boolean(process.env.NEXT_PUBLIC_API_URL);
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_TOKEN = process.env.JINZAIQ_DEMO_TOKEN;
 
-export async function demoToken() {
-  const email = "suproteek.demo@example.com";
-  const password = "password123";
-  const register = await fetch(`${API_URL}/api/v1/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, name: "Suproteek" }),
-    cache: "no-store"
-  });
-  if (register.ok) return (await register.json()).access_token as string;
-  const login = await fetch(`${API_URL}/api/v1/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-    cache: "no-store"
-  });
-  return (await login.json()).access_token as string;
+export function isDemoMode() {
+  return !API_URL;
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  try {
-    const token = await demoToken();
-    const response = await fetch(`${API_URL}${path}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error(`API request failed: ${response.status}`);
-    return response.json() as Promise<T>;
-  } catch (error) {
+  if (!API_URL) {
     const fallback = fallbackForPath(path);
-    if (fallback && (process.env.VERCEL === "1" || !hasExplicitApiUrl)) {
+    if (fallback !== null) {
       return fallback as T;
     }
-    throw error;
+    throw new Error(`No demo data is available for ${path}`);
   }
+
+  if (!API_TOKEN) {
+    throw new Error("JINZAIQ_DEMO_TOKEN must be configured when NEXT_PUBLIC_API_URL is set");
+  }
+
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { Authorization: `Bearer ${API_TOKEN}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(8_000)
+  });
+  if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+  return response.json() as Promise<T>;
 }
 
 export function yen(value: number | null) {
   if (!value) return "Salary not listed";
   return `¥${Math.round(value / 10000).toLocaleString()}万`;
+}
+
+export function salaryRange(min: number | null, max: number | null) {
+  if (!min && !max) return "Compensation not listed";
+  if (min && max) return `${yen(min)} – ${yen(max)}`;
+  return min ? `From ${yen(min)}` : `Up to ${yen(max)}`;
 }
 import { fallbackForPath } from "./fallbackData";

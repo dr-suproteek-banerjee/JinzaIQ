@@ -1,38 +1,9 @@
-import { BookmarkPlus, ExternalLink } from "lucide-react";
+import { ArrowUpRight, MapPin, Radar, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { JobWithMatch } from "@/lib/api";
-import { yen } from "@/lib/api";
+import { salaryRange } from "@/lib/api";
 
 export function JobCard({ item }: { item: JobWithMatch }) {
-  const { job, match } = item;
-  return (
-    <article className="card job-card">
-      <div>
-        <div className="subtle">{job.company.name} · {job.location} · {job.remote_policy}</div>
-        <h2 style={{ margin: "6px 0" }}>
-          <Link href={`/jobs/${job.id}`}>{job.title}</Link>
-        </h2>
-        <div className="subtle">
-          {yen(job.salary_min)}-{job.salary_max ? yen(job.salary_max) : "open"} · Japanese {job.japanese_requirement} · {job.visa_sponsorship}
-        </div>
-        <div className="pill-row">
-          {job.required_skills.slice(0, 5).map((skill) => <span className="pill" key={skill}>{skill}</span>)}
-        </div>
-        <p>{match.summary}</p>
-        <div className="pill-row">
-          <span className="pill">Freshness: {job.estimated_freshness}</span>
-          <span className="pill">Confidence: {match.confidence}</span>
-          <span className="pill">Missing: {match.missing_skills.slice(0, 2).join(", ") || "None"}</span>
-        </div>
-      </div>
-      <div className="match">
-        <strong>{match.match_score}%</strong>
-        <span>Match</span>
-        <div className="pill-row" style={{ justifyContent: "center" }}>
-          <BookmarkPlus size={17} aria-label="Save job" />
-          <ExternalLink size={17} aria-label="Open application" />
-        </div>
-      </div>
-    </article>
-  );
+  const { job, match } = item; const initials = job.company.name.split(/\s+/).map((word) => word[0]).join("").slice(0, 2);
+  return <article className="job-card-premium"><div className="job-card-head"><div className="company-mark">{initials}</div><div className="job-identity"><span>{job.company.name}</span><small><MapPin size={13} /> {job.location} · {job.remote_policy}</small></div><span className={`source-badge ${job.source_type}`}><i /> {job.source_type === "live" ? job.source_name : "Curated demo"}</span></div><div className="job-title-row"><h2><Link href={`/jobs/${encodeURIComponent(job.id)}`}>{job.title}</Link></h2><div className={`score-orb ${match.match_score >= 80 ? "high" : ""}`}><strong>{match.match_score}</strong><span>match</span></div></div><p className="job-description">{job.description || match.summary}</p><div className="job-facts"><span>{salaryRange(job.salary_min, job.salary_max)}</span><span>日本語 {job.japanese_requirement}</span><span>{job.visa_sponsorship}</span></div><div className="pill-row job-skills">{job.required_skills.slice(0, 5).map((skill) => <span className={`pill ${match.matched_skills.includes(skill) ? "matched" : ""}`} key={skill}>{match.matched_skills.includes(skill) ? <Sparkles size={11} /> : null}{skill}</span>)}</div><div className="job-card-foot"><span><Radar size={15} /> {match.summary}</span><div><Link href={`/jobs/${encodeURIComponent(job.id)}`}>View match</Link><a href={job.application_url} target={job.application_url.startsWith("http") ? "_blank" : undefined} rel="noreferrer" aria-label={`Open ${job.title} application`}><ArrowUpRight size={17} /></a></div></div></article>;
 }
