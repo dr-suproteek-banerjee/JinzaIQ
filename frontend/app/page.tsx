@@ -1,38 +1,11 @@
-import { apiGet, type JobWithMatch } from "@/lib/api";
-import { JobCard } from "@/components/JobCard";
+import { ArrowRight, FileSearch2, Globe2, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { JobCard } from "@/components/JobCard";
+import { getJobData } from "@/lib/jobs";
+
+export const revalidate = 21600;
 
 export default async function Dashboard() {
-  const recommendations = await apiGet<JobWithMatch[]>("/api/v1/recommendations");
-  const strong = recommendations.filter((item) => item.match.match_score >= 80).length;
-  const average = Math.round(recommendations.reduce((sum, item) => sum + item.match.match_score, 0) / recommendations.length);
-  return (
-    <>
-      <div className="topbar">
-        <div>
-          <h1 className="page-title">Good morning, Suproteek</h1>
-          <div className="subtle">Your Japan tech career command center is ready.</div>
-        </div>
-        <Link className="button" href="/jobs">Explore jobs</Link>
-      </div>
-      <section className="grid stats">
-        <div className="card"><div className="subtle">Japan Job Readiness</div><div className="metric">{average}%</div></div>
-        <div className="card"><div className="subtle">Jobs matching your profile</div><div className="metric">120</div></div>
-        <div className="card"><div className="subtle">Strong matches</div><div className="metric">{strong}</div></div>
-        <div className="card"><div className="subtle">Applications</div><div className="metric">8</div></div>
-      </section>
-      <section className="grid two-col" style={{ marginTop: 16 }}>
-        <div className="grid">
-          {recommendations.slice(0, 4).map((item) => <JobCard item={item} key={item.job.id} />)}
-        </div>
-        <aside className="card">
-          <h2>Top skills to improve</h2>
-          <div className="pill-row">
-            {["Spring Boot", "Kubernetes", "Japanese N2", "Kafka", "AWS ECS"].map((skill) => <span className="pill" key={skill}>{skill}</span>)}
-          </div>
-          <p className="subtle">Visa sponsorship indicators are inferred from listing language and must be verified directly with employers.</p>
-        </aside>
-      </section>
-    </>
-  );
+  const data = await getJobData(); const recommendations = data.items.slice(0, 4); const strong = data.items.filter((item) => item.match.match_score >= 80).length; const average = data.items.length ? Math.round(data.items.reduce((sum, item) => sum + item.match.match_score, 0) / data.items.length) : 0;
+  return <><section className="dashboard-hero"><div className="hero-main"><span className="live-label"><i /> Job intelligence, refreshed</span><h1>Find the role that fits.<br /><em>Know why it fits.</em></h1><p>JinzaIQ turns scattered job listings and your resume into a focused, explainable career strategy for Japan and remote-first teams.</p><div className="hero-actions"><Link className="button button-large" href="/resume"><FileSearch2 size={18} /> Match my resume</Link><Link className="button ghost button-large" href="/jobs">Explore {data.items.length} roles <ArrowRight size={17} /></Link></div><div className="trust-row ink"><span><ShieldCheck size={16} /> Private by design</span><span><Sparkles size={16} /> No black-box score</span><span><Globe2 size={16} /> Live public feeds</span></div></div><aside className="signal-card"><div className="signal-top"><span>Market pulse</span><span className="live-label small"><i /> Live</span></div><div className="signal-score"><strong>{average}</strong><span>/ 100<br />portfolio fit</span></div><div className="signal-bars"><div><span>Technical alignment</span><b style={{ width: `${Math.min(94, average + 9)}%` }} /></div><div><span>Location flexibility</span><b style={{ width: "82%" }} /></div><div><span>Language readiness</span><b style={{ width: "56%" }} /></div></div><Link href="/profile">Improve your signal <ArrowRight size={15} /></Link></aside></section><section className="stat-strip"><div><span>Available now</span><strong>{data.items.length}</strong><small>roles in the feed</small></div><div><span>Live listings</span><strong>{data.liveCount}</strong><small>from public APIs</small></div><div><span>Strong fits</span><strong>{strong}</strong><small>for the demo profile</small></div><div><span>Curated Japan</span><strong>{data.curatedCount}</strong><small>transparent demos</small></div></section><section className="content-section"><div className="section-intro"><div><span className="kicker">Recommended now</span><h2>High-signal opportunities</h2><p>Ranked across skills, role intent, language, location, experience, and visa indicators.</p></div><Link className="text-link" href="/jobs">View every role <ArrowRight size={15} /></Link></div><div className="jobs-grid">{recommendations.map((item) => <JobCard item={item} key={item.job.id} />)}</div></section></>;
 }

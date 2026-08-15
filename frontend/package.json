@@ -10,13 +10,16 @@
     "build": "next build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.0",
     "lucide-react": "0.468.0",
+    "mammoth": "^1.12.1",
     "next": "^16.3.1",
+    "pdf-parse": "^2.4.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "recharts": "2.12.7",

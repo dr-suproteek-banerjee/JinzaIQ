@@ -1,16 +1,12 @@
+import { ProfileEditor } from "@/components/ProfileEditor";
+
+export const metadata = { title: "Candidate Profile" };
+
 export default function ProfilePage() {
   return (
     <>
-      <h1 className="page-title">Candidate Profile</h1>
-      <form className="card grid" style={{ marginTop: 16, maxWidth: 860 }}>
-        <input className="input" placeholder="Target role" defaultValue="Software Engineer" />
-        <input className="input" placeholder="Desired Japan location" defaultValue="Tokyo" />
-        <select className="select" defaultValue="None">
-          {["None", "N5", "N4", "N3", "N2", "N1", "Native"].map((level) => <option key={level}>{level}</option>)}
-        </select>
-        <textarea className="textarea" defaultValue="Python, React, AWS, PostgreSQL, FastAPI" />
-        <button className="button" type="button">Save profile</button>
-      </form>
+      <div className="page-heading"><span className="kicker">Candidate workspace</span><h1 className="page-title">Your career profile, in focus.</h1><p className="hero-copy subtle">Fine-tune the signals that shape every match. Your data stays in this browser until you choose to upload a resume for one-time analysis.</p></div>
+      <ProfileEditor />
     </>
   );
 }

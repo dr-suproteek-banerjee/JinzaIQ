@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from enum import StrEnum
 from uuid import uuid4
 
@@ -42,9 +42,13 @@ class ApplicationStatus(StrEnum):
     REJECTED = "Rejected"
 
 
+def utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 
 class User(Base, TimestampMixin):

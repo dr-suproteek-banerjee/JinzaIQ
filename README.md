@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](#tech-stack)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.11x-009688?logo=fastapi&logoColor=white)](#tech-stack)
-[![Next.js](https://img.shields.io/badge/Next.js-14-000000?logo=next.js&logoColor=white)](#tech-stack)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](#tech-stack)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](#tech-stack)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql&logoColor=white)](#tech-stack)
 [![pgvector](https://img.shields.io/badge/pgvector-enabled-6E56CF)](#vector-search)
@@ -159,7 +159,7 @@ Full breakdown lives in [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 <td valign="top" width="50%">
 
 **Frontend**
-- Next.js 14 (App Router)
+- Next.js 16 (App Router)
 - TypeScript (strict mode)
 - Tailwind CSS
 - React Query / server components for data fetching

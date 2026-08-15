@@ -1,39 +1,11 @@
+import { ArrowUpRight, Building2, MapPin, ShieldAlert } from "lucide-react";
+import { notFound } from "next/navigation";
 import { ScoreBreakdown } from "@/components/ScoreBreakdown";
-import { apiGet, type JobWithMatch, yen } from "@/lib/api";
+import { salaryRange } from "@/lib/api";
+import { getJobData } from "@/lib/jobs";
 
-export default async function JobDetail({ params }: { params: { id: string } }) {
-  const item = await apiGet<JobWithMatch>(`/api/v1/jobs/${params.id}`);
-  const { job, match } = item;
-  return (
-    <>
-      <div className="topbar">
-        <div>
-          <h1 className="page-title">{job.title}</h1>
-          <div className="subtle">{job.company.name} · {job.location} · {job.remote_policy}</div>
-        </div>
-        <a className="button" href={job.application_url}>Apply</a>
-      </div>
-      <section className="grid two-col">
-        <article className="card">
-          <h2>Your match: {match.match_score}%</h2>
-          <ScoreBreakdown match={match} />
-          <h3>Strong matches</h3>
-          <div className="pill-row">{match.matched_skills.map((skill) => <span className="pill" key={skill}>{skill}</span>)}</div>
-          <h3>Missing</h3>
-          <div className="pill-row">{match.missing_skills.map((skill) => <span className="pill" key={skill}>{skill}</span>)}</div>
-          {match.risks.map((risk) => <p className="warning" key={risk}>{risk}</p>)}
-        </article>
-        <aside className="card">
-          <h2>Role details</h2>
-          <p>{yen(job.salary_min)}-{job.salary_max ? yen(job.salary_max) : "open"} · {job.experience_level}</p>
-          <p>Japanese: {job.japanese_requirement}. English: professional communication expected.</p>
-          <p>Visa: {job.visa_sponsorship}. Verify eligibility directly with the employer.</p>
-          <h3>Responsibilities</h3>
-          <ul>{job.responsibilities.map((item) => <li key={item}>{item}</li>)}</ul>
-          <h3>Benefits</h3>
-          <ul>{job.benefits.map((item) => <li key={item}>{item}</li>)}</ul>
-        </aside>
-      </section>
-    </>
-  );
+export const revalidate = 21600;
+export default async function JobDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; const data = await getJobData(); const item = data.items.find(({ job }) => job.id === decodeURIComponent(id)); if (!item) notFound(); const { job, match } = item;
+  return <><div className="detail-hero"><div className="company-mark large">{job.company.name.split(/\s+/).map((word) => word[0]).join("").slice(0,2)}</div><div><span className={`source-badge ${job.source_type}`}><i /> {job.source_type === "live" ? `Live · ${job.source_name}` : "Curated demo"}</span><h1>{job.title}</h1><p><Building2 size={15} /> {job.company.name} <MapPin size={15} /> {job.location} · {job.remote_policy}</p></div><div className="detail-cta"><span>{salaryRange(job.salary_min, job.salary_max)}</span><a className="button" href={job.application_url} target={job.application_url.startsWith("http") ? "_blank" : undefined} rel="noreferrer">{job.source_type === "live" ? "Apply at source" : "Match your resume"} <ArrowUpRight size={17} /></a></div></div><section className="detail-grid"><article className="surface detail-copy"><span className="kicker">The opportunity</span><h2>What you’ll work on</h2><p className="lead-copy">{job.description}</p><ul>{job.responsibilities.map((value) => <li key={value}>{value}</li>)}</ul><h3>Skills in the listing</h3><div className="pill-row">{job.required_skills.map((skill) => <span className={`pill ${match.matched_skills.includes(skill) ? "matched" : ""}`} key={skill}>{skill}</span>)}</div></article><aside className="detail-aside"><div className="surface match-panel"><span className="kicker">Profile fit</span><div className="big-score"><strong>{match.match_score}</strong><span>/100</span></div><p>{match.summary}</p><ScoreBreakdown match={match} /></div><div className="surface caution"><ShieldAlert size={18} /><p>Visa and language signals come from listing text or curated assumptions. Confirm them directly with the employer.</p></div></aside></section></>;
 }
